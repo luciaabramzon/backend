@@ -1,0 +1,21 @@
+{
+  "name": "desafio-normalizr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.1",
+    "knex": "^2.3.0",
+    "mongoose": "^6.6.0",
+    "normalizr": "^3.6.2",
+    "socket.io": "^4.5.2"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^7.5.0"
+  }
+}
