@@ -1,77 +1,79 @@
-const express = require("express");
+  const express = require("express");
 const { Server: HTTPServer } = require("http");
 const { Server: SocketServer } = require("socket.io");
 const events = require("./socket_events");
 const Contenedor = require("./utils/contenedor");
 const contenedor = new Contenedor("./data.json");
-const messages = contenedor.getAll();
-const fakerTest=require('./test/faker')
+const fakerTest = require("./test/faker");
 const app = express();
-const getData=require('./normalized_data/normalized')
+const message=contenedor.getAll()
 const httpServer = new HTTPServer(app);
 const socketServer = new SocketServer(httpServer);
 
-const connection=require('./database');
+const connection = require("./database");
 const { Chat } = require("./schema/schema");
-connection()
+connection();
 
 app.use(express.static("public"));
-app.use('/getData',getData)
-app.use('/api/productos-test',fakerTest)
+app.use("/api/productos-test", fakerTest);
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
 
-socketServer.on("connection", (socket) => {
+const { normalize, schema } = require("normalizr");
+
+const author = new schema.Entity("author", {}, { idAttribute: "email" });
+
+const mensaje = new schema.Entity("mensaje", {
+  author: author,
+  idAttribute: "id",
+});
+
+const normalizarMensajes = (mensajesConId) =>
+  normalize(mensajesConId, schemaMensajes);
+
+async function getMensNormalizados() {
+  const mensajes = await contenedor.getAll();
+  const normalizados = normalizarMensajes({ id: "mensajes", mensajes });
+  return normalizados;
+}
+
+const schemaMensajes = new schema.Entity(
+  "mensajes",
+  {
+    mensajes: [mensaje],
+  },
+  { idAttribute: "id" }
+);
+
+
+socketServer.on("connection",async (socket) => {
   console.log("Nuevo client conectado");
   socketServer.emit(
     events.UPDATE_MESSAGES,
     "Bienvenido al WebSocket",
-    messages
+    await getMensNormalizados()
   );
 
-  socket.on(events.POST_MESSAGE,(msg) => {
-    
-    const _msg={
-      author:{
+  socket.on(events.POST_MESSAGE,async (msg) => {
+    const _msg = {
+      author: {
         id: msg.email,
         nombre: msg.nombre,
-        email:msg.email,
+        email: msg.email,
         edad: msg.edad,
         alias: msg.alias,
-        avatar: msg.avatar
+        avatar: msg.avatar,
       },
-      mensaje:msg.mensaje
-    }
+      mensaje: msg.mensaje,
+    };
 
     contenedor.save(_msg);
-    socketServer.sockets.emit(events.NEW_MESSAGE, _msg);
-    Chat.insertMany({
-      author:{
-        id: msg.email,
-        nombre: msg.nombre,
-        email:msg.email,
-        edad: msg.edad,
-        alias: msg.alias,
-        avatar: msg.avatar
-      },
-      mensaje:msg.mensaje
-    }
-    )
-
+    socketServer.sockets.emit(events.NEW_MESSAGE, await getMensNormalizados());
+   
   });
 
-  socket.on(events.LIKE_MESSAGE, (msgId) => {
-    const msg = contenedor.getById(msgId);
-    msg.likes++; // Incrementa el numero de likes
-    contenedor.updateById(msgId, msg); // Actualiza el mensaje en el contenedor
-    socketServer.sockets.emit(
-      events.UPDATE_MESSAGES,
-      "Los mensajes se actualizaron",
-      contenedor.getAll() // Enviar el nuevo contenedor, array de mensajes
-    );
-  });
 });
 
 const PORT = process.env.PORT || 3000;
