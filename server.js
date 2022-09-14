@@ -11,8 +11,9 @@ const httpServer = new HTTPServer(app);
 const socketServer = new SocketServer(httpServer);
 
 const connection = require("./database");
-const { Chat } = require("./schema/schema");
 connection();
+
+const { Chat } = require("./schema/schema");
 
 app.use(express.static("public"));
 app.use("/api/productos-test", fakerTest);
