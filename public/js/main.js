@@ -32,7 +32,9 @@ socket.on("UPDATE_MESSAGES", async (msg, allMessages) => {
   schemaMensajes,
   message.entities
 )
-denormalizado.mensajes
+const mensaje=denormalizado.mensajes
+console.log(mensaje)
+mensaje.map(msg=> appendMessage(msg))
     .sort((a,b) => a.date - b.date)
     .forEach(msg => appendMessage(msg));
    const normalized=Math.round(JSON.stringify(message).length/1024)

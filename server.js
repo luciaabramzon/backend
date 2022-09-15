@@ -10,8 +10,11 @@ const message=contenedor.getAll()
 const httpServer = new HTTPServer(app);
 const socketServer = new SocketServer(httpServer);
 
+const webChat=require('./schema/schema')
+const db= new webChat
+
+
 const connection = require("./database");
-const { Chat } = require("./schema/schema");
 connection();
 
 app.use(express.static("public"));
@@ -34,7 +37,7 @@ const normalizarMensajes = (mensajesConId) =>
   normalize(mensajesConId, schemaMensajes);
 
 async function getMensNormalizados() {
-  const mensajes = await contenedor.getAll();
+  const mensajes = await db.getAll();
   const normalizados = normalizarMensajes({ id: "mensajes", mensajes });
   return normalizados;
 }
@@ -57,7 +60,7 @@ socketServer.on("connection",async (socket) => {
   );
 
   socket.on(events.POST_MESSAGE,async (msg) => {
-    const _msg = {
+    const _msg =await db.save({
       author: {
         id: msg.email,
         nombre: msg.nombre,
@@ -67,9 +70,9 @@ socketServer.on("connection",async (socket) => {
         avatar: msg.avatar,
       },
       mensaje: msg.mensaje,
-    };
+    });
 
-    contenedor.save(_msg);
+    
     socketServer.sockets.emit(events.NEW_MESSAGE, await getMensNormalizados());
    
   });
