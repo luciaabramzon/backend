@@ -1,4 +1,4 @@
-  const express = require("express");
+const express = require("express");
 const { Server: HTTPServer } = require("http");
 const { Server: SocketServer } = require("socket.io");
 const events = require("./socket_events");
@@ -17,6 +17,8 @@ const db= new webChat
 const connection = require("./database");
 connection();
 
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.use("/api/productos-test", fakerTest);
 

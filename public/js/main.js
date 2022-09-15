@@ -33,8 +33,7 @@ socket.on("UPDATE_MESSAGES", async (msg, allMessages) => {
   message.entities
 )
 const mensaje=denormalizado.mensajes
-console.log(mensaje)
-mensaje.map(msg=> appendMessage(msg))
+  mensaje
     .sort((a,b) => a.date - b.date)
     .forEach(msg => appendMessage(msg));
    const normalized=Math.round(JSON.stringify(message).length/1024)
@@ -49,19 +48,23 @@ socket.on("NEW_MESSAGE",async (msg) => {
     schemaMensajes,
     message.entities
   )
-  appendMessage(denormalizado);
+  const index=denormalizado.mensajes.length
+  appendMessage(denormalizado.mensajes[index-1]);
 })
 
 async function appendMessage(msg) {
-  const m= await msg.author
- document.getElementById("posts").innerHTML += `
+  const m= await msg
+ const doc=m._doc.author
+    document.getElementById("posts").innerHTML += `
     <div class="post ui card">
       <div class="content">
-       <img  src=${m.avatar} style="width:10%"> <b>${m.nombre} (${msg.id}):</b> ${msg.mensaje}
+       <img  src=${doc.avatar} style="width:10%"> <b>${doc.nombre}:</b> ${m._doc.mensaje}
         <hr/>
       </div>
     </div>
   `;
+
+
 }
 
 function enviarMensaje(){
@@ -76,4 +79,3 @@ function enviarMensaje(){
 
  
 ;
- 
