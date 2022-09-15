@@ -32,6 +32,7 @@ socket.on("UPDATE_MESSAGES", async (msg, allMessages) => {
   schemaMensajes,
   message.entities
 )
+console.log(denormalizado.mensajes)
 denormalizado.mensajes
     .sort((a,b) => a.date - b.date)
     .forEach(msg => appendMessage(msg));
